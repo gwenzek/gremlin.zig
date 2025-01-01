@@ -20,17 +20,15 @@ pub fn main() !void {
     // Read the contents (up to 10MB)
     const buffer_size = 1024 * 1024 * 10;
     const file_buffer = try stdin.readToEndAlloc(allocator, buffer_size);
+
     const request = try plugin.CodeGeneratorRequestReader.init(allocator, file_buffer);
 
-    // log.warn("Request {}", .{request});
-    for (request.getFileToGenerate(), 0..) |file_to_generate, i| {
-        log.warn("Request {}/{}: {s}", .{ i, request._file_to_generate.?.items.len, file_to_generate });
-    }
-
     const num_proto_files = request._proto_file_bufs.?.items.len;
+    var proto_files = try request.getProtoFile(allocator);
+
     // Create fake source proto file
-    const parsed = try allocator.alloc(gremlin_gen.ProtoFile, num_proto_files);
-    defer allocator.free(parsed);
+    const fake_parsed = try allocator.alloc(gremlin_gen.ProtoFile, num_proto_files);
+    defer allocator.free(fake_parsed);
 
     const files = try allocator.alloc(gremlin_gen.ZigFile, num_proto_files);
 
@@ -42,7 +40,7 @@ pub fn main() !void {
     }
 
     // Initialize files
-    for (files, try request.getProtoFile(allocator), parsed) |*file, desc, *p| {
+    for (files, proto_files, fake_parsed) |*file, desc, *p| {
         file.* = try readDescriptor(allocator, desc, p);
     }
 
@@ -56,13 +54,37 @@ pub fn main() !void {
         try file.resolveRefs();
     }
 
-    {
-        var out_file = try gremlin_gen.FileOutput.init(allocator, files[0].out_path);
-        try files[0].write(&out_file);
-        try out_file.close();
+    const num_out_files = request._file_to_generate.?.items.len;
+    const out_files = try allocator.alloc(?plugin.CodeGeneratorResponse.File, num_out_files);
+    defer allocator.free(out_files);
+    for (out_files, request.getFileToGenerate()) |*o, req| {
+        const j = blk: {
+            for (0..num_proto_files) |i| {
+                const j = num_proto_files - 1 - i;
+                if (std.mem.eql(u8, proto_files[j].getName(), req)) break :blk j;
+            }
+            log.err("Requested output file not found in input proto files: {s}", .{req});
+            break;
+        };
+
+        var content = std.ArrayList(u8).init(allocator);
+        {
+            var file_output = gremlin_gen.FileOutput{
+                .allocator = allocator,
+                .depth = 0,
+                .buf_writer = std.io.bufferedWriter(content.writer().any()),
+                .file = undefined,
+            };
+            try files[j].write(&file_output);
+            try file_output.buf_writer.flush();
+        }
+        o.* = .{
+            .name = try std.mem.join(allocator, "", &.{ req, ".zig" }),
+            .content = content.items,
+        };
     }
 
-    const res: plugin.CodeGeneratorResponse = .{};
+    const res: plugin.CodeGeneratorResponse = .{ .file = out_files };
     const stdout = std.io.getStdOut();
     {
         const res_bytes = try res.encode(allocator);
