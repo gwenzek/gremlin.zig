@@ -102,4 +102,16 @@ pub fn build(b: *std.Build) void {
         const run_integration = b.addRunArtifact(integration_test);
         test_step.dependOn(&run_integration.step);
     }
+
+    {
+        const exe = b.addExecutable(.{
+            .name = "zig_protoc",
+            .root_source_file = b.path("src/protoc/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+
+        exe.root_module.addImport("gremlin", gremlin);
+        b.installArtifact(exe);
+    }
 }
