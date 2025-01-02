@@ -1,7 +1,7 @@
 const std = @import("std");
 const pb = @import("gremlin");
 const gremlin_gen = @import("gremlin_gen");
-// const gremlin_parser = @import("gremlin_parser");
+const gremlin_parser = @import("gremlin_parser");
 const plugin = @import("plugin.proto.zig");
 const descriptor = @import("descriptor.proto.zig");
 
@@ -15,11 +15,17 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const stdin = std.io.getStdIn();
-
     // Read the contents (up to 10MB)
     const buffer_size = 1024 * 1024 * 10;
+
+    const args = try std.process.argsAlloc(allocator);
+    const stdin = if (args.len < 2) std.io.getStdIn() else try std.fs.cwd().openFile(args[1], .{});
     const file_buffer = try stdin.readToEndAlloc(allocator, buffer_size);
+
+    {
+        const dupe = try std.fs.cwd().createFile("/tmp/gremlin/request.pb", .{ .truncate = true });
+        try dupe.writeAll(file_buffer);
+    }
 
     const request = try plugin.CodeGeneratorRequestReader.init(allocator, file_buffer);
 
@@ -32,12 +38,8 @@ pub fn main() !void {
 
     const files = try allocator.alloc(gremlin_gen.ZigFile, num_proto_files);
 
-    defer {
-        for (files) |*file| {
-            file.deinit();
-        }
-        allocator.free(files);
-    }
+    // don't bother deinit individual files
+    defer allocator.free(files);
 
     // Initialize files
     for (files, proto_files, fake_parsed) |*file, desc, *p| {
@@ -101,7 +103,7 @@ fn readDescriptor(
     const out_path = try std.mem.join(allocator, "", &.{ desc.getName(), ".zig" });
     defer allocator.free(out_path);
 
-    const res: gremlin_gen.ZigFile = .{
+    var res: gremlin_gen.ZigFile = .{
         .out_path = out_path,
         .allocator = allocator,
         .imports = .{ .allocator = allocator, .items = &.{}, .capacity = 0 },
@@ -109,6 +111,32 @@ fn readDescriptor(
         .structs = .{ .allocator = allocator, .items = &.{}, .capacity = 0 },
         .file = src_ptr,
     };
+
+    if (desc._enum_type_bufs) |enums| {
+        try res.enums.resize(enums.items.len);
+        log.warn("Converting {} enums", .{enums.items.len});
+        for (res.enums.items, enums.items) |*e, enum_desc_bytes| {
+            const enum_desc = try descriptor.EnumDescriptorProtoReader.init(allocator, enum_desc_bytes);
+            defer enum_desc.deinit();
+
+            if (enum_desc._value_bufs == null) continue;
+
+            log.warn("Converting enum {s}", .{enum_desc.getName()});
+            e.* = .{
+                .allocator = allocator,
+                .const_name = enum_desc.getName(),
+                .full_name = enum_desc.getName(),
+                .entries = .{ .allocator = allocator, .items = &.{}, .capacity = 0 },
+                .src = enum_desc_bytes.ptr,
+            };
+            try e.entries.resize(enum_desc._value_bufs.?.items.len);
+            for (e.entries.items, enum_desc._value_bufs.?.items) |*enum_entry, entry_bytes| {
+                const enum_value = try descriptor.EnumValueDescriptorProtoReader.init(allocator, entry_bytes);
+                enum_entry.* = .{ .allocator = allocator, .constName = enum_value.getName(), .value = enum_value.getNumber() };
+            }
+        }
+        log.warn("Converted {} enums", .{enums.items.len});
+    }
 
     return res;
 }
