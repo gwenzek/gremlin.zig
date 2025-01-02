@@ -20,8 +20,8 @@
 
 const std = @import("std");
 const naming = @import("naming.zig");
-const fields =  @import("../../../parser/main.zig").fields;
-const FieldType =  @import("../../../parser/main.zig").FieldType;
+const fields = @import("gremlin_parser").fields;
+const FieldType = @import("gremlin_parser").FieldType;
 
 /// Represents a repeated message field in Protocol Buffers.
 /// Handles serialization and deserialization of repeated nested messages,
@@ -228,8 +228,8 @@ pub const ZigRepeatableMessageField = struct {
 };
 
 test "basic repeatable message field" {
-    const ScopedName =  @import("../../../parser/main.zig").ScopedName;
-    const ParserBuffer =  @import("../../../parser/main.zig").ParserBuffer;
+    const ScopedName = @import("gremlin_parser").ScopedName;
+    const ParserBuffer = @import("gremlin_parser").ParserBuffer;
 
     var scope = try ScopedName.init(std.testing.allocator, "");
     defer scope.deinit();

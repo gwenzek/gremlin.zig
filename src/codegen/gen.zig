@@ -19,11 +19,17 @@
 
 const std = @import("std");
 
-const gremlin_parser = @import("../parser/main.zig");
-const ProtoFile = gremlin_parser.ProtoFile;
-const paths = @import("gen/paths.zig");
-const FileOutput = @import("gen/output.zig").FileOutput;
-const ZigFile = @import("gen/file.zig").ZigFile;
+const gremlin_parser = @import("gremlin_parser");
+pub const ProtoFile = gremlin_parser.ProtoFile;
+pub const paths = @import("gen/paths.zig");
+pub const FileOutput = @import("gen/output.zig").FileOutput;
+pub const ZigImport = @import("gen/import.zig").ZigImport;
+pub const ZigFile = @import("gen/file.zig").ZigFile;
+pub const ZigEnum = @import("gen/enum.zig").ZigEnum;
+pub const ZigEnumEntry = @import("gen/enum.zig").ZigEnumEntry;
+pub const ZigStruct = @import("gen/struct.zig").ZigStruct;
+pub const ZigField = @import("gen/fields/struct-field.zig").Field;
+pub const field_types = @import("gen/fields/struct-field.zig").field_types;
 
 /// GeneratorError enumerates possible errors that can occur during code generation
 pub const GeneratorError = error{

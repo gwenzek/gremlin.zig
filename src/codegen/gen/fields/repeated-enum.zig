@@ -20,9 +20,9 @@
 
 const std = @import("std");
 const naming = @import("naming.zig");
-const fields =  @import("../../../parser/main.zig").fields;
-const FieldType =  @import("../../../parser/main.zig").FieldType;
-const Option =  @import("../../../parser/main.zig").Option;
+const fields = @import("gremlin_parser").fields;
+const FieldType = @import("gremlin_parser").FieldType;
+const Option = @import("gremlin_parser").Option;
 
 /// Represents a repeated enum field in Protocol Buffers.
 /// Handles both packed and unpacked encoding formats, with specialized
@@ -281,8 +281,8 @@ pub const ZigRepeatableEnumField = struct {
 };
 
 test "basic repeatable enum field" {
-    const ScopedName =  @import("../../../parser/main.zig").ScopedName;
-    const ParserBuffer =  @import("../../../parser/main.zig").ParserBuffer;
+    const ScopedName = @import("gremlin_parser").ScopedName;
+    const ParserBuffer = @import("gremlin_parser").ParserBuffer;
 
     var scope = try ScopedName.init(std.testing.allocator, "");
     defer scope.deinit();

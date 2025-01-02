@@ -1,0 +1,55 @@
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
+load("@rules_zig//zig:defs.bzl", "BINARY_KIND", "zig_binary", "zig_library")
+
+zig_library(
+    name = "protobuf",
+    import_name = "gremlin",
+    main = "src/gremlin/main.zig",
+    srcs = [
+        "src/gremlin/reader.zig",
+        "src/gremlin/sizes.zig",
+        "src/gremlin/types.zig",
+        "src/gremlin/writer.zig",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+zig_library(
+    name = "gen",
+    import_name = "gremlin_gen",
+    main = "src/codegen/gen.zig",
+    srcs = glob(["src/codegen/**/*.zig"]),
+    visibility = ["//visibility:public"],
+    deps = [":parser"],
+)
+
+zig_library(
+    name = "parser",
+    import_name = "gremlin_parser",
+    main = "src/parser/main.zig",
+    srcs = glob(["src/parser/**/*.zig"]),
+    visibility = ["//visibility:public"],
+)
+
+
+zig_binary(
+    name = "generator",
+    srcs = [
+        "src/protoc/plugin.proto.zig",
+        "src/protoc/descriptor.proto.zig",
+    ],
+    kind = BINARY_KIND.exe,
+    main = "src/protoc/main.zig",
+    visibility = ["//visibility:public"],
+    deps = [":protobuf", ":gen", ":parser"],
+)
+
+proto_lang_toolchain(
+    name = "zig_toolchain",
+    command_line = "--zig_out=$(OUT)",
+    output_files = "multiple",
+    plugin = ":generator",
+    plugin_format_flag = "--plugin=protoc-gen-zig=%s",
+    runtime = ":protobuf",
+    visibility = ["//visibility:public"],
+)

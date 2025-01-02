@@ -20,8 +20,7 @@
 const std = @import("std");
 const paths = @import("./paths.zig");
 const naming = @import("./fields/naming.zig");
-const Import =  @import("../../parser/main.zig").Import;
-const ProtoFile =  @import("../../parser/main.zig").ProtoFile;
+const ProtoFile = @import("gremlin_parser").ProtoFile;
 const ZigFile = @import("./file.zig").ZigFile;
 
 /// Represents a Zig import statement, handling both system imports (std, gremlin)

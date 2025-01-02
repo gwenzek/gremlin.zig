@@ -21,8 +21,15 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    _ = b.addModule("gremlin_parser", .{
+    const gremlin_parser = b.addModule("gremlin_parser", .{
         .root_source_file = b.path("src/parser/main.zig"),
+    });
+
+    const gremlin_gen = b.addModule("gremlin_gen", .{
+        .root_source_file = b.path("src/codegen/gen.zig"),
+        .imports = &.{
+            .{ .name = "gremlin_parser", .module = gremlin_parser },
+        },
     });
 
     const gremlin = b.addModule("gremlin", .{
@@ -64,7 +71,11 @@ pub fn build(b: *std.Build) void {
         test_step.dependOn(&run_codegen_tests.step);
     }
 
-    {
+    // TODO: Unfortunately making gremlin_parser a module breaks ProtoGenStep that calls it at build time.
+    // Possible workarounds:
+    // * revert the module changes, and only have one big module for gen + parse, but I had issue making that work with Bazel.
+    // * compile the translation into an executable and call that in ProtoGenStep
+    if (false) {
         // First create a step that will run both protobuf generations
         const proto_gen_step = b.step("proto-gen", "Generate protobuf files");
 
@@ -101,5 +112,19 @@ pub fn build(b: *std.Build) void {
 
         const run_integration = b.addRunArtifact(integration_test);
         test_step.dependOn(&run_integration.step);
+    }
+
+    {
+        const exe = b.addExecutable(.{
+            .name = "zig_protoc",
+            .root_source_file = b.path("src/protoc/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+
+        exe.root_module.addImport("gremlin", gremlin);
+        exe.root_module.addImport("gremlin_gen", gremlin_gen);
+        exe.root_module.addImport("gremlin_parser", gremlin_parser);
+        b.installArtifact(exe);
     }
 }

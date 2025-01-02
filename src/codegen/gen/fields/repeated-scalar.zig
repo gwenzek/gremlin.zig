@@ -20,7 +20,7 @@
 
 const std = @import("std");
 const naming = @import("naming.zig");
-const fields =  @import("../../../parser/main.zig").fields;
+const fields = @import("gremlin_parser").fields;
 const scalar = @import("scalar.zig");
 
 /// Represents a repeated scalar field in Protocol Buffers.
@@ -290,8 +290,8 @@ pub const ZigRepeatableScalarField = struct {
 };
 
 test "basic repeatable scalar field" {
-    const ScopedName =  @import("../../../parser/main.zig").ScopedName;
-    const ParserBuffer =  @import("../../../parser/main.zig").ParserBuffer;
+    const ScopedName = @import("gremlin_parser").ScopedName;
+    const ParserBuffer = @import("gremlin_parser").ParserBuffer;
 
     var scope = try ScopedName.init(std.testing.allocator, "");
     defer scope.deinit();

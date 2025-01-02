@@ -1,0 +1,26 @@
+module(
+    name = "zig-protobuf",
+    version = "20240722.0-c644d11",
+    compatibility_level = 1,
+)
+
+bazel_dep(name = "hermetic_cc_toolchain", version = "3.1.0")
+
+toolchains = use_extension("@hermetic_cc_toolchain//toolchain:ext.bzl", "toolchains")
+use_repo(toolchains, "zig_sdk")
+
+bazel_dep(name = "rules_zig", version = "20240913.0-1957d05")
+
+zig = use_extension("@rules_zig//zig:extensions.bzl", "zig")
+zig.toolchain(zig_version = "0.13.0")
+zig.mirrors(urls = [
+    "https://mirror.zml.ai/zig",
+])
+use_repo(zig, "zig_toolchains")
+
+register_toolchains("@rules_zig//zig/target:all")
+
+register_toolchains("@zig_toolchains//:all")
+
+
+bazel_dep(name = "rules_proto", version = "6.0.0-rc1")

@@ -20,7 +20,7 @@
 
 const std = @import("std");
 const naming = @import("naming.zig");
-const Option =  @import("../../../parser/main.zig").Option;
+const Option = @import("gremlin_parser").Option;
 
 /// Maps Protocol Buffer scalar types to their corresponding Zig types
 pub fn scalarZigType(proto_type: []const u8) []const u8 {
@@ -328,9 +328,9 @@ pub const ZigScalarField = struct {
 };
 
 test "basic field" {
-    const fields =  @import("../../../parser/main.zig").fields;
-    const ScopedName =  @import("../../../parser/main.zig").ScopedName;
-    const ParserBuffer =  @import("../../../parser/main.zig").ParserBuffer;
+    const fields = @import("gremlin_parser").fields;
+    const ScopedName = @import("gremlin_parser").ScopedName;
+    const ParserBuffer = @import("gremlin_parser").ParserBuffer;
 
     var scope = try ScopedName.init(std.testing.allocator, "");
     defer scope.deinit();
@@ -393,9 +393,9 @@ test "basic field" {
 }
 
 test "default field" {
-    const fields =  @import("../../../parser/main.zig").fields;
-    const ScopedName =  @import("../../../parser/main.zig").ScopedName;
-    const ParserBuffer =  @import("../../../parser/main.zig").ParserBuffer;
+    const fields = @import("gremlin_parser").fields;
+    const ScopedName = @import("gremlin_parser").ScopedName;
+    const ParserBuffer = @import("gremlin_parser").ParserBuffer;
 
     var scope = try ScopedName.init(std.testing.allocator, "");
     defer scope.deinit();

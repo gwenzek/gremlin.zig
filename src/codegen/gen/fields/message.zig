@@ -20,8 +20,8 @@
 
 const std = @import("std");
 const naming = @import("naming.zig");
-const Option =  @import("../../../parser/main.zig").Option;
-const FieldType =  @import("../../../parser/main.zig").FieldType;
+const Option = @import("gremlin_parser").Option;
+const FieldType = @import("gremlin_parser").FieldType;
 
 /// Represents a Protocol Buffer message field in Zig.
 /// Message fields require special handling since they involve nested serialization
@@ -199,9 +199,9 @@ pub const ZigMessageField = struct {
 };
 
 test "basic message field" {
-    const fields =  @import("../../../parser/main.zig").fields;
-    const ScopedName =  @import("../../../parser/main.zig").ScopedName;
-    const ParserBuffer =  @import("../../../parser/main.zig").ParserBuffer;
+    const fields = @import("gremlin_parser").fields;
+    const ScopedName = @import("gremlin_parser").ScopedName;
+    const ParserBuffer = @import("gremlin_parser").ParserBuffer;
 
     var scope = try ScopedName.init(std.testing.allocator, "");
     defer scope.deinit();

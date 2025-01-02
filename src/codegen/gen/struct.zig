@@ -18,9 +18,9 @@
 // Created by ab, 11.11.2024
 
 const std = @import("std");
-const Message =  @import("../../parser/main.zig").Message;
-const Enum =  @import("../../parser/main.zig").Enum;
-const FieldType =  @import("../../parser/main.zig").FieldType;
+const Message = @import("gremlin_parser").Message;
+const Enum = @import("gremlin_parser").Enum;
+const FieldType = @import("gremlin_parser").FieldType;
 const naming = @import("fields/naming.zig");
 const ZigEnum = @import("enum.zig").ZigEnum;
 const ZigFile = @import("file.zig").ZigFile;
@@ -47,7 +47,7 @@ pub const ZigStruct = struct {
     full_reader_name: []const u8,
     full_wire_name: []const u8,
 
-    source: *const Message,
+    source: *const anyopaque,
 
     /// Initializes a new ZigStruct from a protobuf Message
     pub fn init(
@@ -116,7 +116,7 @@ pub const ZigStruct = struct {
     /// Finds an enum definition within this struct or its nested structs
     pub fn findEnum(self: *ZigStruct, enum_def: *const Enum) ?*ZigEnum {
         for (self.enums.items) |*e| {
-            if (e.src == enum_def) return e;
+            if (e.src == @as(*const anyopaque, @ptrCast(enum_def))) return e;
         }
 
         for (self.structs.items) |*s| {
@@ -129,7 +129,7 @@ pub const ZigStruct = struct {
     /// Finds a message definition within this struct or its nested structs
     pub fn findMessage(self: *ZigStruct, msg_def: *const Message) ?*ZigStruct {
         for (self.structs.items) |*s| {
-            if (s.source == msg_def) return s;
+            if (@intFromPtr(s.source) == @intFromPtr(msg_def)) return s;
             if (s.findMessage(msg_def)) |found| return found;
         }
         return null;
