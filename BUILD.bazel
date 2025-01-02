@@ -41,7 +41,7 @@ zig_binary(
     kind = BINARY_KIND.exe,
     main = "src/protoc/main.zig",
     visibility = ["//visibility:public"],
-    deps = [":protobuf", ":gen"],
+    deps = [":protobuf", ":gen", ":parser"],
 )
 
 proto_lang_toolchain(
