@@ -20,7 +20,7 @@
 
 const std = @import("std");
 const naming = @import("naming.zig");
-const Option =  @import("../../../parser/main.zig").Option;
+const Option = @import("gremlin_parser").Option;
 
 /// Formats a string literal for use in Zig code, properly escaping special characters
 /// and converting to hexadecimal representation where necessary. This is particularly
@@ -255,9 +255,9 @@ pub const ZigBytesField = struct {
 };
 
 test "basic bytes field" {
-    const fields =  @import("../../../parser/main.zig").fields;
-    const ScopedName =  @import("../../../parser/main.zig").ScopedName;
-    const ParserBuffer =  @import("../../../parser/main.zig").ParserBuffer;
+    const fields = @import("gremlin_parser").fields;
+    const ScopedName = @import("gremlin_parser").ScopedName;
+    const ParserBuffer = @import("gremlin_parser").ParserBuffer;
 
     var scope = try ScopedName.init(std.testing.allocator, "");
     defer scope.deinit();
@@ -336,9 +336,9 @@ test "basic bytes field" {
 }
 
 test "bytes field with default" {
-    const fields =  @import("../../../parser/main.zig").fields;
-    const ScopedName =  @import("../../../parser/main.zig").ScopedName;
-    const ParserBuffer =  @import("../../../parser/main.zig").ParserBuffer;
+    const fields = @import("gremlin_parser").fields;
+    const ScopedName = @import("gremlin_parser").ScopedName;
+    const ParserBuffer = @import("gremlin_parser").ParserBuffer;
 
     var scope = try ScopedName.init(std.testing.allocator, "");
     defer scope.deinit();

@@ -19,7 +19,7 @@
 
 const std = @import("std");
 const naming = @import("fields/naming.zig");
-const Enum =  @import("../../parser/main.zig").Enum;
+const Enum = @import("gremlin_parser").Enum;
 
 /// Represents a single entry in a Zig enum definition.
 /// Each entry contains a constant name and its associated integer value.
@@ -59,7 +59,7 @@ pub const ZigEnum = struct {
     const_name: []const u8, // The name of the enum type
     full_name: []const u8, // Fully qualified name including scope
     entries: std.ArrayList(ZigEnumEntry),
-    src: *const Enum, // Reference to source enum definition
+    src: *const anyopaque, // Reference to source enum definition
 
     /// Initialize a new ZigEnum from a Protocol Buffer enum definition.
     /// Handles conversion of names, ensures a zero value exists, and manages
@@ -193,7 +193,7 @@ pub const ZigEnum = struct {
 };
 
 test "enum generation" {
-    const ParserBuffer =  @import("../../parser/main.zig").ParserBuffer;
+    const ParserBuffer = @import("gremlin_parser").ParserBuffer;
     var buf = ParserBuffer.init(
         \\enum ForeignEnum {
         \\    FOREIGN_FOO = 0;

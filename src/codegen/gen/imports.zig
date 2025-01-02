@@ -18,8 +18,8 @@
 // Created by ab, 04.11.2024
 
 const std = @import("std");
-const ProtoFile =  @import("../../parser/main.zig").ProtoFile;
-const Message =  @import("../../parser/main.zig").Message;
+const ProtoFile = @import("gremlin_parser").ProtoFile;
+const Message = @import("gremlin_parser").Message;
 
 /// ImportCollector analyzes Protocol Buffer definitions to gather all required imports.
 /// It tracks unique dependencies and ensures no duplicate imports are included.

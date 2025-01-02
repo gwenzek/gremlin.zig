@@ -40,7 +40,7 @@ pub const FileOutput = struct {
     /// Current indentation depth (each level is Config.INDENT_SIZE spaces)
     depth: u32,
     /// Buffered writer for improved I/O performance
-    buf_writer: std.io.BufferedWriter(Config.BUFFER_SIZE, std.fs.File.Writer),
+    buf_writer: std.io.BufferedWriter(Config.BUFFER_SIZE, std.io.AnyWriter),
     /// Underlying file handle
     file: std.fs.File,
 
@@ -69,7 +69,7 @@ pub const FileOutput = struct {
             .allocator = allocator,
             .depth = 0,
             .file = file,
-            .buf_writer = std.io.bufferedWriter(file.writer()),
+            .buf_writer = std.io.bufferedWriter(file.writer().any()),
         };
     }
 

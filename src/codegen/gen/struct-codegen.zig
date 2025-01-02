@@ -348,11 +348,10 @@ pub const CodeGenerator = struct {
 
         // Handle empty structs
         if (self.target.fields.items.len == 0) {
-            const empty_encode = try std.fmt.allocPrint(
-                self.allocator,
+            const empty_encode = try std.fmt.allocPrint(self.allocator,
                 \\pub fn encodeTo(_: *const {s}, _: *gremlin.Writer) void {{}}
                 \\
-                ,.{self.target.writer_name});
+            , .{self.target.writer_name});
             defer self.allocator.free(empty_encode);
 
             try self.out_file.writeString(empty_encode);
@@ -360,10 +359,9 @@ pub const CodeGenerator = struct {
         }
 
         // Generate encodeTo function for writing to provided buffer
-        const encode_to = try std.fmt.allocPrint(
-            self.allocator,
+        const encode_to = try std.fmt.allocPrint(self.allocator,
             \\pub fn encodeTo(self: *const {s}, target: *gremlin.Writer) void {{
-                ,.{self.target.writer_name});
+        , .{self.target.writer_name});
         defer self.allocator.free(encode_to);
         try self.out_file.writeString(encode_to);
 

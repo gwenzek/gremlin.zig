@@ -19,21 +19,21 @@
 // Created by ab, 12.11.2024
 
 const std = @import("std");
-const Message =  @import("../../../parser/main.zig").Message;
-const fields =  @import("../../../parser/main.zig").fields;
-const FieldType =  @import("../../../parser/main.zig").FieldType;
+const Message = @import("gremlin_parser").Message;
+const fields = @import("gremlin_parser").fields;
+const FieldType = @import("gremlin_parser").FieldType;
 
 /// Import all specialized field type implementations
-const field_types = struct {
-    const ZigScalarField = @import("scalar.zig").ZigScalarField;
-    const ZigBytesField = @import("bytes.zig").ZigBytesField;
-    const ZigMessageField = @import("message.zig").ZigMessageField;
-    const ZigEnumField = @import("enum.zig").ZigEnumField;
-    const ZigRepeatableBytesField = @import("repeated-bytes.zig").ZigRepeatableBytesField;
-    const ZigRepeatableMessageField = @import("repeated-message.zig").ZigRepeatableMessageField;
-    const ZigRepeatableEnumField = @import("repeated-enum.zig").ZigRepeatableEnumField;
-    const ZigRepeatableScalarField = @import("repeated-scalar.zig").ZigRepeatableScalarField;
-    const ZigMapField = @import("map.zig").ZigMapField;
+pub const field_types = struct {
+    pub const ZigScalarField = @import("scalar.zig").ZigScalarField;
+    pub const ZigBytesField = @import("bytes.zig").ZigBytesField;
+    pub const ZigMessageField = @import("message.zig").ZigMessageField;
+    pub const ZigEnumField = @import("enum.zig").ZigEnumField;
+    pub const ZigRepeatableBytesField = @import("repeated-bytes.zig").ZigRepeatableBytesField;
+    pub const ZigRepeatableMessageField = @import("repeated-message.zig").ZigRepeatableMessageField;
+    pub const ZigRepeatableEnumField = @import("repeated-enum.zig").ZigRepeatableEnumField;
+    pub const ZigRepeatableScalarField = @import("repeated-scalar.zig").ZigRepeatableScalarField;
+    pub const ZigMapField = @import("map.zig").ZigMapField;
 };
 
 /// Represents a Protocol Buffer field of any type.

@@ -18,9 +18,9 @@
 // Created by ab, 11.11.2024
 
 const std = @import("std");
-const ProtoFile =  @import("../../parser/main.zig").ProtoFile;
-const Enum =  @import("../../parser/main.zig").Enum;
-const Message =  @import("../../parser/main.zig").Message;
+const ProtoFile = @import("gremlin_parser").ProtoFile;
+const Enum = @import("gremlin_parser").Enum;
+const Message = @import("gremlin_parser").Message;
 
 const ZigEnum = @import("./enum.zig").ZigEnum;
 const ZigStruct = @import("./struct.zig").ZigStruct;
@@ -159,7 +159,7 @@ pub const ZigFile = struct {
     pub fn findEnumName(self: *const ZigFile, target: *const Enum) !?[]const u8 {
         // Check top-level enums
         for (self.enums.items) |*enum_item| {
-            if (enum_item.src == target) {
+            if (enum_item.src == @as(*const anyopaque, @ptrCast(target))) {
                 return try self.allocator.dupe(u8, enum_item.full_name);
             }
         }
@@ -209,7 +209,7 @@ pub const ZigFile = struct {
     /// Returns: The fully qualified name or an error if not found
     pub fn findMessageName(self: *const ZigFile, target: *const Message) !?[]const u8 {
         for (self.structs.items) |*struct_item| {
-            if (struct_item.source == target) {
+            if (@intFromPtr(struct_item.source) == @intFromPtr(target)) {
                 return try self.allocator.dupe(u8, struct_item.full_writer_name);
             }
             if (struct_item.findMessage(target)) |found| {

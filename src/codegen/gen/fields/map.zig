@@ -20,9 +20,9 @@
 
 const std = @import("std");
 const naming = @import("naming.zig");
-const Option =  @import("../../../parser/main.zig").Option;
-const FieldType =  @import("../../../parser/main.zig").FieldType;
-const MessageMapField =  @import("../../../parser/main.zig").fields.MessageMapField;
+const Option = @import("gremlin_parser").Option;
+const FieldType = @import("gremlin_parser").FieldType;
+const MessageMapField = @import("gremlin_parser").fields.MessageMapField;
 
 // Import scalar type utilities
 const scalarSize = @import("scalar.zig").scalarSize;
