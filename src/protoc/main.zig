@@ -116,27 +116,60 @@ fn readDescriptor(
         try res.enums.resize(enums.items.len);
         log.warn("Converting {} enums", .{enums.items.len});
         for (res.enums.items, enums.items) |*e, enum_desc_bytes| {
-            const enum_desc = try descriptor.EnumDescriptorProtoReader.init(allocator, enum_desc_bytes);
-            defer enum_desc.deinit();
-
-            if (enum_desc._value_bufs == null) continue;
-
-            log.warn("Converting enum {s}", .{enum_desc.getName()});
-            e.* = .{
-                .allocator = allocator,
-                .const_name = enum_desc.getName(),
-                .full_name = enum_desc.getName(),
-                .entries = .{ .allocator = allocator, .items = &.{}, .capacity = 0 },
-                .src = enum_desc_bytes.ptr,
-            };
-            try e.entries.resize(enum_desc._value_bufs.?.items.len);
-            for (e.entries.items, enum_desc._value_bufs.?.items) |*enum_entry, entry_bytes| {
-                const enum_value = try descriptor.EnumValueDescriptorProtoReader.init(allocator, entry_bytes);
-                enum_entry.* = .{ .allocator = allocator, .constName = enum_value.getName(), .value = enum_value.getNumber() };
-            }
+            e.* = try parseEnum(allocator, enum_desc_bytes);
         }
         log.warn("Converted {} enums", .{enums.items.len});
     }
 
+    if (desc._message_type_bufs) |structs| {
+        try res.structs.resize(structs.items.len);
+        log.warn("Converting {} structs", .{structs.items.len});
+        for (res.structs.items, structs.items) |*s, struct_desc_bytes| {
+            const struct_desc = try descriptor.DescriptorProtoReader.init(allocator, struct_desc_bytes);
+            defer struct_desc.deinit();
+
+            log.warn("Converting struct {s}", .{struct_desc.getName()});
+            s.* = .{
+                .allocator = allocator,
+                .wire_enum_name = "",
+                .writer_name = "",
+                .reader_name = "",
+                .full_writer_name = "",
+                .full_reader_name = "",
+                .full_wire_name = "",
+
+                .enums = .{ .allocator = allocator, .items = &.{}, .capacity = 0 },
+                .structs = .{ .allocator = allocator, .items = &.{}, .capacity = 0 },
+                .fields = .{ .allocator = allocator, .items = &.{}, .capacity = 0 },
+                .source = struct_desc_bytes.ptr,
+            };
+        }
+        log.warn("Converted {} structs", .{structs.items.len});
+    }
+
     return res;
+}
+
+fn parseEnum(
+    allocator: std.mem.Allocator,
+    enum_desc_bytes: []const u8,
+) !gremlin_gen.ZigEnum {
+    const enum_desc = try descriptor.EnumDescriptorProtoReader.init(allocator, enum_desc_bytes);
+    defer enum_desc.deinit();
+
+    log.warn("Converting enum {s}", .{enum_desc.getName()});
+
+    const n_entries = if (enum_desc._value_bufs) |values| values.items.len else 0;
+    const entries = try allocator.alloc(gremlin_gen.ZigEnumEntry, n_entries);
+    for (entries, enum_desc._value_bufs.?.items) |*enum_entry, entry_bytes| {
+        const enum_value = try descriptor.EnumValueDescriptorProtoReader.init(allocator, entry_bytes);
+        enum_entry.* = .{ .allocator = allocator, .constName = enum_value.getName(), .value = enum_value.getNumber() };
+    }
+    return .{
+        .allocator = allocator,
+        .const_name = enum_desc.getName(),
+        .full_name = enum_desc.getName(),
+        .src = enum_desc_bytes.ptr,
+        .entries = .{ .allocator = allocator, .items = entries, .capacity = n_entries },
+    };
 }
